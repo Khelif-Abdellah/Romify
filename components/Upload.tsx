@@ -4,7 +4,7 @@ import {
   REDIRECT_DELAY_MS,
 } from "lib/constants";
 import { CheckCircle2, ImageIcon, UploadCloud } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { useOutletContext } from "react-router";
 import type { AuthContext } from "type";
 
@@ -16,8 +16,17 @@ const Upload = ({ onComplete }: UploadProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { isSignedIn } = useOutletContext<AuthContext>();
+
+  useEffect(() => {
+    return () => {
+      intervalRef.current && clearInterval(intervalRef.current);
+      timeoutRef.current && clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   const processFile = useCallback(
     (file: File) => {
@@ -27,15 +36,19 @@ const Upload = ({ onComplete }: UploadProps) => {
       setProgress(0);
 
       const reader = new FileReader();
+      reader.onerror = () => {
+        setFile(null);
+        setProgress(0);
+      };
       reader.onloadend = () => {
         const base64Data = reader.result as string;
 
-        const interval = setInterval(() => {
+        intervalRef.current = setInterval(() => {
           setProgress((prev) => {
             const next = prev + PROGRESS_INCREMENT;
             if (next >= 100) {
-              clearInterval(interval);
-              setTimeout(() => {
+              clearInterval(intervalRef.current!);
+              timeoutRef.current = setTimeout(() => {
                 onComplete?.(base64Data);
               }, REDIRECT_DELAY_MS);
               return 100;
@@ -65,7 +78,8 @@ const Upload = ({ onComplete }: UploadProps) => {
     if (!isSignedIn) return;
 
     const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile && droppedFile.type.startsWith("image/")) {
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+    if (droppedFile && allowedTypes.includes(droppedFile.type)) {
       processFile(droppedFile);
     }
   };
