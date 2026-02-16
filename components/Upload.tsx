@@ -6,7 +6,6 @@ import {
 import { CheckCircle2, ImageIcon, UploadCloud } from "lucide-react";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { useOutletContext } from "react-router";
-import type { AuthContext } from "type";
 
 type UploadProps = {
   onComplete?: (base64Data: string) => void;
