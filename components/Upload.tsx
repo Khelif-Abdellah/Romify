@@ -77,7 +77,7 @@ const Upload = ({ onComplete }: UploadProps) => {
     if (!isSignedIn) return;
 
     const droppedFile = e.dataTransfer.files[0];
-    const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
     if (droppedFile && allowedTypes.includes(droppedFile.type)) {
       processFile(droppedFile);
     }
@@ -102,7 +102,7 @@ const Upload = ({ onComplete }: UploadProps) => {
           <input
             type="file"
             className="drop-input"
-            accept=".jpg,.jpeg,.png"
+            accept=".jpg,.jpeg,.png,.webp"
             disabled={!isSignedIn}
             onChange={handleChange}
           />
